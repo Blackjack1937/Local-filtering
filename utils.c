@@ -96,15 +96,19 @@ void binomial_filter(char *graymap, char *product, int *filter, int filter_coeff
     {
         for (int j = 0; j < cols; j++)
         {
+            int sum = 0;
             for (int n = -1; n <= 1; n++)
             {
-                int sum = 0;
                 for (int m = -1; m <= 1; m++)
                 {
-                    if ((i + n) < 0)
+                    if ((i + n) >= 0 && (j + m) >= 0 && (i + n) < rows && (j + m) < cols)
                     {
                         sum += graymap[i + n, j + m] * filter[n + 1, m + 1];
                     }
                 }
             }
+            sum = sum / filter_coeff;
+            product[i, j] = sum;
         }
+    }
+}

@@ -80,6 +80,8 @@ int main(int argc, char *argv[])
     int filter[3][3] = {{1, 2, 1}, {2, 4, 2}, {1, 2, 1}};
     product = (gray *)malloc(cols * rows * sizeof(gray));
 
+    binomial_filter(graymap, product, filter, filter_coeff, cols, rows);
+
     /* Closing input file */
     fclose(ifp);
 
