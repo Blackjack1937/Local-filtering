@@ -8,4 +8,4 @@ int pm_getint(FILE *file);
 
 void pm_erreur(char *);
 
-void binomial_filter(char *graymap, char *product, int *filter, int filter_coeff, int cols, int rows);
+void binomial_filter(gray*graymap, gray *product, int filter[3][3], int filter_coeff, int cols, int rows);
