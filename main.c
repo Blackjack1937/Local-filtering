@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include "utils.h"
 
+typedef unsigned char gray;
+
 int main(int argc, char *argv[])
 {
     FILE *ifp, *ofp;
@@ -25,7 +27,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    /*  Magic number reading */
+    /* Magic number reading */
     ich1 = getc(ifp);
     if (ich1 == EOF)
     {
@@ -34,23 +36,16 @@ int main(int argc, char *argv[])
     ich2 = getc(ifp);
     if (ich2 == EOF)
     {
-        pm_erreur("EOF /read error / magic number");
+        pm_erreur("EOF / read error / magic number");
     }
 
     if (ich2 != '2' && ich2 != '5')
     {
-        pm_erreur(" wrong file type ");
+        pm_erreur("wrong file type");
     }
     else
     {
-        if (ich2 == '2')
-        {
-            pgmraw_in = 0;
-        }
-        else
-        {
-            pgmraw_in = 1;
-        }
+        pgmraw_in = (ich2 == '2') ? 0 : 1; // Simplified assignment
     }
 
     /* Reading image dimensions */
@@ -58,12 +53,18 @@ int main(int argc, char *argv[])
     rows = pm_getint(ifp);
     maxval = pm_getint(ifp);
 
-    /* Memory allocation  */
+    /* Memory allocation */
     graymap = (gray *)malloc(cols * rows * sizeof(gray));
+    if (!graymap) // Check if memory allocation was successful
+    {
+        printf("Memory allocation error\n");
+        exit(1);
+    }
 
     /* Reading */
     for (i = 0; i < rows; i++)
         for (j = 0; j < cols; j++)
+        {
             if (pgmraw_in)
             {
                 graymap[i * cols + j] = pm_getrawbyte(ifp);
@@ -72,14 +73,22 @@ int main(int argc, char *argv[])
             {
                 graymap[i * cols + j] = pm_getint(ifp);
             }
+        }
 
     // Binomial filtering
     int filter_coeff = 16;
-    int *filter = malloc(3 * 3 * sizeof(int));
-
-    int filter[3][3] = {{1, 2, 1}, {2, 4, 2}, {1, 2, 1}};
+    int filter[3][3] = {{1, 2, 1}, 
+                        {2, 4, 2}, 
+                        {1, 2, 1}};
     product = (gray *)malloc(cols * rows * sizeof(gray));
+    if (!product) // Check if memory allocation was successful
+    {
+        printf("Memory allocation error\n");
+        free(graymap); // Free previously allocated memory
+        exit(1);
+    }
 
+    // Call the binomial_filter function
     binomial_filter(graymap, product, filter, filter_coeff, cols, rows);
 
     /* Closing input file */
@@ -90,30 +99,51 @@ int main(int argc, char *argv[])
     if (ofp == NULL)
     {
         printf("error in opening file %s\n", argv[2]);
+        free(graymap); // Free allocated memory before exit
+        free(product);
         exit(1);
     }
 
     /* Writing */
-    // pgmraw_in is the opposite of pgmraw_out
-    if (pgmraw_in)
-    {
-        pgmraw_out = 0;
-    }
-    else
-    {
-        pgmraw_out = 1;
-    }
-
+    pgmraw_out = pgmraw_in ? 0 : 1; // Determine output format
     if (pgmraw_out)
+    {
         fprintf(ofp, "P5\n");
+    }
     else
+    {
         fprintf(ofp, "P2\n");
+    }
 
-    fprintf(ofp, "%d %d \n", cols, rows);
+    fprintf(ofp, "%d %d\n", cols, rows);
     fprintf(ofp, "%d\n", maxval);
+
+    // Write the product (filtered image) to the output file
+    for (i = 0; i < rows; i++)
+    {
+        for (j = 0; j < cols; j++)
+        {
+            if (pgmraw_out)
+            {
+                putc(product[i * cols + j], ofp);
+            }
+            else
+            {
+                fprintf(ofp, "%d ", product[i * cols + j]);
+            }
+        }
+        if (!pgmraw_out) // Add a new line after each row for P2 format
+        {
+            fprintf(ofp, "\n");
+        }
+    }
 
     /* Closing output file */
     fclose(ofp);
+
+    /* Free allocated memory */
+    free(graymap);
+    free(product);
 
     return 0;
 }
