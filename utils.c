@@ -61,18 +61,41 @@ void pm_erreur(const char *msg) {
 }
 
 
+int compare(const void *a, const void *b) {
+    return (*(unsigned char *)a - *(unsigned char *)b);
+}
+
+void median_filter(gray *graymap, gray *product, int cols, int rows){
+
+    int median_window[3];
+    int count = 0;
+
+for (int i =0 ; i<rows ; i++){
+    for (int j=0 ; j<cols ; j++){
+       for (int n =-1; n<=1 ;n++){
+        for (int m =-1;m<=1 ; m++){
+          median_window[count++]= graymap[(i + n) * cols + (j + m)];         
+        }
+       }
+       qsort(median_filter, 3, sizeof(int), compare);
+       product[i * cols+ j] = median_window[2];
+    }
+}
+
+}
+
 void binomial_filter(gray *graymap, gray *product, int cols, int rows) {
-    // int filter[3][3] = {
-    //     {1, 2, 1},
-    //     {2, 4, 2},
-    //     {1, 2, 1}
-    // };
-    int filter[5][5] = {
-        {1,0,0,0,0},
-        {1,1,0,0,0},
-        {1,2,1,0,0},
-        {1,4,6,4,1}
+    int filter[3][3] = {
+        {1, 2, 1},
+        {2, 4, 2},
+        {1, 2, 1}
     };
+    // int filter[5][5] = {
+    //     {1,0,0,0,0},
+    //     {1,1,0,0,0},
+    //     {1,2,1,0,0},
+    //     {1,4,6,4,1}
+    // };
     int filter_coeff = 16;
 
     for (int i = 0; i < rows; i++) {
