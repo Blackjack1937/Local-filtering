@@ -74,14 +74,14 @@ int compare(const void *a, const void *b)
 
 void median_filter(gray *graymap, gray *product, int cols, int rows)
 {
+    int median_window[9];
+    int count;
 
-    int median_window[3];
-    int count = 0;
-
-    for (int i = 0; i < rows; i++)
+    for (int i = 1; i < rows - 1; i++)
     {
-        for (int j = 0; j < cols; j++)
+        for (int j = 1; j < cols - 1; j++)
         {
+            count = 0;
             for (int n = -1; n <= 1; n++)
             {
                 for (int m = -1; m <= 1; m++)
@@ -89,8 +89,8 @@ void median_filter(gray *graymap, gray *product, int cols, int rows)
                     median_window[count++] = graymap[(i + n) * cols + (j + m)];
                 }
             }
-            qsort(median_window, 9, sizeof(int), compare); // Qsort must be used on the median_window instead of median_filter
-            product[i * cols + j] = median_window[2];
+            qsort(median_window, 9, sizeof(int), compare);
+            product[i * cols + j] = median_window[4];
         }
     }
 }
