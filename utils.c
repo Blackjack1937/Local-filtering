@@ -95,19 +95,54 @@ void median_filter(gray *graymap, gray *product, int cols, int rows)
     }
 }
 
-void binomial_filter(gray *graymap, gray *product, int cols, int rows)
+void binomial_filter_3x3(gray *graymap, gray *product, int cols, int rows)
 {
     int filter[3][3] = {
         {1, 2, 1},
         {2, 4, 2},
         {1, 2, 1}};
-    // int filter[5][5] = {
-    //     {1,0,0,0,0},
-    //     {1,1,0,0,0},
-    //     {1,2,1,0,0},
-    //     {1,4,6,4,1}
-    // };
     int filter_coeff = 16;
+
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            int sum = 0;
+            for (int n = -1; n <= 1; n++)
+            {
+                for (int m = -1; m <= 1; m++)
+                {
+
+                    if ((i + n) >= 0 && (j + m) >= 0 && (i + n) < rows && (j + m) < cols)
+                    {
+                        sum += graymap[(i + n) * cols + (j + m)] * filter[n + 1][m + 1];
+                    }
+                }
+            }
+
+            sum = sum / filter_coeff;
+            if (sum < 0)
+            {
+                sum = 0;
+            }
+            else if (sum > 255)
+            {
+                sum = 255;
+            }
+            product[i * cols + j] = (gray)sum;
+        }
+    }
+}
+
+void binomial_filter_5x5(gray *graymap, gray *product, int cols, int rows)
+{
+    int filter[5][5] = {
+        {1, 4, 6, 4, 1},
+        {4, 16, 24, 16, 4},
+        {6, 24, 36, 24, 6},
+        {4, 16, 24, 16, 4},
+        {1, 4, 6, 4, 1}};
+    int filter_coeff = 256;
 
     for (int i = 0; i < rows; i++)
     {

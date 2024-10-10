@@ -1,92 +1,60 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "utils.h"
 
 typedef unsigned char gray;
 
-int main(int argc, char *argv[])
+int main()
 {
     FILE *ifp, *ofp;
     gray *graymap;
     gray *product;
     int ich1, ich2, rows, cols, maxval;
+    char input_file[100], output_file[100];
+    int filter_type, passes;
 
-    /* Arguments */
-    if (argc != 3)
+    printf("Choose a filter to apply:\n");
+    printf("1. Binomial Filter 3x3 (Smoothing)\n");
+    printf("2. Binomial Filter 5x5 (Smoothing)\n");
+    printf("3. Median Filter (Noise Reduction)\n");
+    printf("Enter your choice: ");
+    scanf("%d", &filter_type);
+    if (filter_type != 1 && filter_type != 2 && filter_type != 3)
     {
-        printf("\nUsage: %s file_in file_out \n\n", argv[0]);
-        exit(0);
+        printf("Invalid filter type! Choose 1 for binomial 3x3, 2 for binomial 5x5, or 3 for median filter.\n");
+        return 1;
     }
 
-    /* Opening input file */
-    ifp = fopen(argv[1], "rb");
+    printf("Enter the number of passes: ");
+    scanf("%d", &passes);
+    printf("Enter the input PGM file name (e.g., boat.pgm): ");
+    scanf("%s", input_file);
+    printf("Enter the output PGM file name (e.g., render.pgm): ");
+    scanf("%s", output_file);
+
+    ifp = fopen(input_file, "rb");
     if (ifp == NULL)
     {
-        printf("error in opening file %s\n", argv[1]);
+        printf("Error in opening file %s\n", input_file);
         exit(1);
     }
 
-    /* Magic number reading */
-    // ich1 = getc(ifp);
-    // if (ich1 == EOF)
-    // {
-    //     pm_erreur("EOF / read error / magic number");
-    // }
-    // ich2 = getc(ifp);
-    // if (ich2 == EOF)
-    // {
-    //     pm_erreur("EOF / read error / magic number");
-    // }
-
-    // if (ich2 != '2' && ich2 != '5')
-    // {
-    //     pm_erreur("wrong file type");
-    // }
-    // else
-    // {
-    //     pgmraw_in = (ich2 == '2') ? 0 : 1; // Simplified assignment
-    // }
+    // Magic number reading
     ich1 = getc(ifp);
     ich2 = getc(ifp);
     if (ich1 != 'P' || ich2 != '5')
     {
         pm_erreur("Wrong file type. Only P5 format is supported.");
     }
-    /* Reading image dimensions */
+
     cols = pm_getint(ifp);
     rows = pm_getint(ifp);
     maxval = pm_getint(ifp);
-    // /* Reading */
-    //     for (i = 0; i < rows; i++)
-    //         for (j = 0; j < cols; j++)
-    //         {
-    //             if (pgmraw_in)
-    //             {
-    //                 graymap[i * cols + j] = pm_getrawbyte(ifp);
-    //             }
-    //             else
-    //             {
-    //                 graymap[i * cols + j] = pm_getint(ifp);
-    //             }
-    //         }
 
     fgetc(ifp);
-    // // Binomial filtering
-    //     int filter_coeff = 16;
-    //     int filter[3][3] = {{1, 2, 1},
-    //                         {2, 4, 2},
-    //                         {1, 2, 1}};
-    //     product = (gray *)malloc(cols * rows * sizeof(gray));
-    //     if (!product) // Check if memory allocation was successful
-    //     {
-    //         printf("Memory allocation error\n");
-    //         free(graymap); // Free previously allocated memory
-    //         exit(1);
-    //     }
 
-    //     // Call the binomial_filter function
-    //     binomial_filter(graymap, product, filter, filter_coeff, cols, rows);
-
+    // Memory allocation for the images
     graymap = (gray *)malloc(cols * rows * sizeof(gray));
     product = (gray *)malloc(cols * rows * sizeof(gray));
     if (!graymap || !product)
@@ -99,58 +67,43 @@ int main(int argc, char *argv[])
     fread(graymap, sizeof(gray), cols * rows, ifp);
     fclose(ifp);
 
-    // binomial_filter(graymap, product, cols, rows);
-    median_filter(graymap, product, cols, rows);
+    for (int i = 0; i < passes; i++)
+    {
+        if (filter_type == 1)
+        {
+            binomial_filter_3x3(graymap, product, cols, rows);
+        }
+        else if (filter_type == 2)
+        {
+            binomial_filter_5x5(graymap, product, cols, rows);
+        }
+        else if (filter_type == 3)
+        {
+            median_filter(graymap, product, cols, rows);
+        }
+        memcpy(graymap, product, cols * rows * sizeof(gray));
+    }
+
     /* Opening output file */
-    ofp = fopen(argv[2], "wb");
+    ofp = fopen(output_file, "wb");
     if (ofp == NULL)
     {
-        printf("error in opening file %s\n", argv[2]);
+        printf("Error in opening file %s\n", output_file);
         free(graymap); // Free allocated memory before exit
         free(product);
         exit(1);
     }
 
-    // /* Writing */
-    // pgmraw_out = pgmraw_in ? 0 : 1; // Determine output format
-    // if (pgmraw_out)
-    // {
-    //     fprintf(ofp, "P5\n");
-    // }
-    // else
-    // {
-    //     fprintf(ofp, "P2\n");
-    // }
-
-    // fprintf(ofp, "%d %d\n", cols, rows);
-    // fprintf(ofp, "%d\n", maxval);
-
-    // // Write the product (filtered image) to the output file
-    // for (i = 0; i < rows; i++)
-    // {
-    //     for (j = 0; j < cols; j++)
-    //     {
-    //         if (pgmraw_out)
-    //         {
-    //             putc(product[i * cols + j], ofp);
-    //         }
-    //         else
-    //         {
-    //             fprintf(ofp, "%d ", product[i * cols + j]);
-    //         }
-    //     }
-    //     if (!pgmraw_out) // Add a new line after each row for P2 format
-    //     {
-    //         fprintf(ofp, "\n");
-    //     }
-    // }
-
+    /* Writing the output image */
     fprintf(ofp, "P5\n%d %d\n%d\n", cols, rows, maxval);
     fwrite(product, sizeof(gray), cols * rows, ofp);
     fclose(ofp);
 
+    /* Free allocated memory */
     free(graymap);
     free(product);
+
+    printf("Filter applied successfully. Output saved in %s\n", output_file);
 
     return 0;
 }
