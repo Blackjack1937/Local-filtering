@@ -174,3 +174,18 @@ void binomial_filter_5x5(gray *graymap, gray *product, int cols, int rows)
         }
     }
 }
+
+void histogram(gray *graymap, int rows, int cols, int histogram[256]) {
+        
+    for (int i = 0; i < 256; i++) {
+        histogram[i] = 0;
+    }
+    for (int n = 0; n < rows; n++) {
+        for (int m = 0; m < cols; m++) {
+            int value = graymap[n * cols + m];
+            histogram[value]++; 
+        }
+    }
+    }
+
+

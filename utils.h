@@ -13,4 +13,5 @@ void binomial_filter_3x3(gray *graymap, gray *product, int cols, int rows);
 void binomial_filter_5x5(gray *graymap, gray *product, int cols, int rows);
 void median_filter(gray *graymap, gray *product, int cols, int rows);
 int compare(const void *a, const void *b);
+void histogram(gray *graymap, int rows, int cols, int histogram[256]);
 #endif
