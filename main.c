@@ -32,12 +32,14 @@ int main() {
     if (filter_type != 4) {
         printf("Enter the number of passes: ");
         scanf("%d", &passes);
+           printf("Enter the output PGM file name: ");
+    scanf("%s", output_file);
+        
     }
 
     printf("Enter the input PGM file name: ");
     scanf("%s", input_file);
-    printf("Enter the output PGM file name: ");
-    scanf("%s", output_file);
+ 
 
     ifp = fopen(input_file, "rb");
     if (ifp == NULL) {
