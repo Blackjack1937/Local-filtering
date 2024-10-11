@@ -174,3 +174,38 @@ void binomial_filter_5x5(gray *graymap, gray *product, int cols, int rows)
         }
     }
 }
+
+void histogram(gray *graymap, int rows, int cols, int histogram[256]) {
+        
+    for (int i = 0; i < 256; i++) {
+        histogram[i] = 0;
+    }
+    for (int n = 0; n < rows; n++) {
+        for (int m = 0; m < cols; m++) {
+            int value = graymap[n * cols + m];
+            histogram[value]++; 
+        }
+    }
+    }
+
+void histogram_stretching(gray *graymap, gray *product, int rows, int cols, int max_value, int min_value) {
+    
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            int value = graymap[i * cols + j];
+            if (value > max_value) {
+                max_value = value;
+            }
+            if (value < min_value) {
+                min_value = value;
+            }
+        }
+    }
+
+        for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            int value = graymap[i * cols + j];
+            product[i * cols + j] = (gray)((value - min_value) * 255.0 / (max_value - min_value));
+        }
+    }
+}
