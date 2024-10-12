@@ -277,16 +277,14 @@ void plot_histogram(const char *csv_filename, const char *output_image)
         printf("Error opening Gnuplot.\n");
         return;
     }
-
-    // Gnuplot commands to generate the histogram plot
     fprintf(gnuplot, "set datafile separator ','\n");
     fprintf(gnuplot, "set terminal png\n");
-    fprintf(gnuplot, "set output '%s'\n", output_image); // Output PNG file
+    fprintf(gnuplot, "set output '%s'\n", output_image);
     fprintf(gnuplot, "set xlabel 'Intensity Value'\n");
     fprintf(gnuplot, "set ylabel 'Frequency'\n");
     fprintf(gnuplot, "set title 'Image Histogram'\n");
-    fprintf(gnuplot, "plot '%s' using 1:2 with boxes\n", csv_filename); // Use CSV for data
-    fflush(gnuplot);                                                    // Send all commands to Gnuplot
+    fprintf(gnuplot, "plot '%s' using 1:2 with boxes\n", csv_filename);
+    fflush(gnuplot);
 
-    pclose(gnuplot); // Close the Gnuplot process
+    pclose(gnuplot);
 }

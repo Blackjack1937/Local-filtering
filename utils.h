@@ -1,4 +1,4 @@
-#ifndef UTILS_H // Include guard to prevent multiple inclusions
+#ifndef UTILS_H // include guard to prevent multiple inclusions
 #define UTILS_H
 
 typedef unsigned char bit;
