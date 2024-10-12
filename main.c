@@ -45,6 +45,8 @@ int main()
     {
         printf("Enter the output PGM file name for the filtered image: ");
         scanf("%s", output_file);
+        printf("Enter the number of passes for the filter: ");
+        scanf("%d", &passes); // Ask for passes here if applying a filter
     }
 
     ifp = fopen(input_file, "rb");
@@ -76,6 +78,7 @@ int main()
     }
     fread(graymap, sizeof(gray), cols * rows, ifp);
     fclose(ifp);
+
     if (filter_type == 4)
     {
         histogram(graymap, rows, cols, histogram_values);
@@ -137,7 +140,6 @@ int main()
         printf("Histogram stretching applied. Image saved to stretched_output.pgm and histogram plotted to %s\n", output_file);
         return 0;
     }
-
     else if (filter_type == 6)
     {
         histogram_equalization(graymap, product, rows, cols);
@@ -174,6 +176,7 @@ int main()
         printf("Histogram equalization applied. Image saved to equalized_output.pgm and histogram plotted to %s\n", output_file);
         return 0;
     }
+
     for (int i = 0; i < passes; i++)
     {
         if (filter_type == 1)
