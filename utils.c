@@ -175,37 +175,118 @@ void binomial_filter_5x5(gray *graymap, gray *product, int cols, int rows)
     }
 }
 
-void histogram(gray *graymap, int rows, int cols, int histogram[256]) {
-        
-    for (int i = 0; i < 256; i++) {
+void histogram(gray *graymap, int rows, int cols, int histogram[256])
+{
+
+    for (int i = 0; i < 256; i++)
+    {
         histogram[i] = 0;
     }
-    for (int n = 0; n < rows; n++) {
-        for (int m = 0; m < cols; m++) {
+    for (int n = 0; n < rows; n++)
+    {
+        for (int m = 0; m < cols; m++)
+        {
             int value = graymap[n * cols + m];
-            histogram[value]++; 
+            histogram[value]++;
         }
     }
-    }
+}
 
-void histogram_stretching(gray *graymap, gray *product, int rows, int cols, int max_value, int min_value) {
-    
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
+void calculate_min_max(gray *graymap, int rows, int cols, int *min_value, int *max_value)
+{
+    *min_value = 255;
+    *max_value = 0;
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
             int value = graymap[i * cols + j];
-            if (value > max_value) {
-                max_value = value;
+            if (value > *max_value)
+            {
+                *max_value = value;
             }
-            if (value < min_value) {
-                min_value = value;
+            if (value < *min_value)
+            {
+                *min_value = value;
             }
         }
     }
+}
 
-        for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
+void histogram_stretching(gray *graymap, gray *product, int rows, int cols, int max_value, int min_value)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
             int value = graymap[i * cols + j];
             product[i * cols + j] = (gray)((value - min_value) * 255.0 / (max_value - min_value));
         }
     }
+}
+
+void histogram_equalization(gray *graymap, gray *product, int rows, int cols)
+{
+    int histogram[256] = {0};
+    int cdf[256] = {0};          // CDF = Cumulative Distribution Function
+    int equalized_lt[256] = {0}; // lookup table
+    int total_pixels = rows * cols;
+    int min_cdf = 0;
+
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            histogram[graymap[i * cols + j]]++;
+        }
+    }
+
+    cdf[0] = histogram[0];
+    for (int i = 1; i < 256; i++)
+    {
+        cdf[i] = cdf[i - 1] + histogram[i];
+    }
+
+    for (int i = 0; i < 256; i++)
+    {
+        if (cdf[i] > 0)
+        {
+            min_cdf = cdf[i];
+            break;
+        }
+    }
+
+    for (int i = 0; i < 256; i++)
+    {
+        equalized_lt[i] = (int)(((float)(cdf[i] - min_cdf) / (total_pixels - min_cdf)) * 255.0);
+    }
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            product[i * cols + j] = (gray)equalized_lt[graymap[i * cols + j]];
+        }
+    }
+}
+
+void plot_histogram(const char *csv_filename, const char *output_image)
+{
+    FILE *gnuplot = popen("gnuplot", "w");
+    if (gnuplot == NULL)
+    {
+        printf("Error opening Gnuplot.\n");
+        return;
+    }
+
+    // Gnuplot commands to generate the histogram plot
+    fprintf(gnuplot, "set datafile separator ','\n");
+    fprintf(gnuplot, "set terminal png\n");
+    fprintf(gnuplot, "set output '%s'\n", output_image); // Output PNG file
+    fprintf(gnuplot, "set xlabel 'Intensity Value'\n");
+    fprintf(gnuplot, "set ylabel 'Frequency'\n");
+    fprintf(gnuplot, "set title 'Image Histogram'\n");
+    fprintf(gnuplot, "plot '%s' using 1:2 with boxes\n", csv_filename); // Use CSV for data
+    fflush(gnuplot);                                                    // Send all commands to Gnuplot
+
+    pclose(gnuplot); // Close the Gnuplot process
 }
