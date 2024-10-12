@@ -36,7 +36,7 @@ int main()
     printf("Enter the input PGM file name: ");
     scanf("%s", input_file);
 
-    if (filter_type == 4 || filter_type == 5 || filter_type == 6)
+    if (filter_type == 5 || filter_type == 6)
     {
         printf("Enter the output PNG file name for the histogram: ");
         scanf("%s", output_file);
