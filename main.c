@@ -46,7 +46,7 @@ int main()
         printf("Enter the output PGM file name for the filtered image: ");
         scanf("%s", output_file);
         printf("Enter the number of passes for the filter: ");
-        scanf("%d", &passes); // Ask for passes here if applying a filter
+        scanf("%d", &passes);
     }
 
     ifp = fopen(input_file, "rb");
